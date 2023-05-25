@@ -1,89 +1,76 @@
 #include "shell.h"
 
 /**
- *_eputs - prints an input string
- * @str: the string to be printed
+ * print_error - prints error messages to standard error
+ * @vars: pointer to struct of variables
+ * @msg: message to print
  *
- * Return: Nothing
-**/
-
-void _eputs(char *str)
+ * Return: void
+ */
+void print_error(vars_t *vars, char *msg)
 {
-int j = 0;
+char *count;
 
-if (!str)
-return;
-while (str[j] != '\0')
+_puts2(vars->argv[0]);
+_puts2(": ");
+count = _uitoa(vars->count);
+_puts2(count);
+free(count);
+_puts2(": ");
+_puts2(vars->av[0]);
+if (msg)
 {
-_eputchar(str[j]);
-j++;
+_puts2(msg);
 }
+else
+perror("");
 }
 
 /**
- * _eputchar - writes the character c to stderr
- * @c: The character to print
+ * _puts2 - prints a string to standard error
+ * @str: string to print
  *
- * Return: On success 1.
- * On error, -1 is returned, and errno is set appropriately.
-**/
-
-int _eputchar(char c)
+ * Return: void
+ */
+void _puts2(char *str)
 {
-static int j;
-static char buf[WRITE_BUF_SIZE];
+ssize_t num, len;
 
-if (c == BUF_FLUSH || j >= WRITE_BUF_SIZE)
+num = _strlen(str);
+len = write(STDERR_FILENO, str, num);
+if (len != num)
 {
-write(2, buf, j);
-j = 0;
+perror("Fatal Error");
+exit(1);
 }
-if (c != BUF_FLUSH)
-buf[j++] = c;
-return (1);
+
 }
 
 /**
- * _putfd - writes the character c to given fd
- * @c: The character to print
- * @fd: The filedescriptor to write to
+ * _uitoa - converts an unsigned int to a string
+ * @count: unsigned int to convert
  *
- * Return: On success 1.
- * On error, -1 is returned, and errno is set appropriately.
-**/
-
-int _putfd(char c, int fd)
+ * Return: pointer to the converted string
+ */
+char *_uitoa(unsigned int count)
 {
-static int j;
-static char buf[WRITE_BUF_SIZE];
+char *numstr;
+unsigned int tmp, digits;
 
-if (c == BUF_FLUSH || j >= WRITE_BUF_SIZE)
+tmp = count;
+for (digits = 0; tmp != 0; digits++)
+tmp /= 10;
+numstr = malloc(sizeof(char) * (digits + 1));
+if (numstr == NULL)
 {
-write(fd, buf, j);
-j = 0;
+perror("Fatal Error1");
+exit(127);
 }
-if (c != BUF_FLUSH)
-buf[j++] = c;
-return (1);
-}
-
-/**
- *_putsfd - prints an input string
- * @str: the string to be printed
- * @fd: the filedescriptor to write to
- *
- * Return: the number of chars put
-**/
-
-int _putsfd(char *str, int fd)
+numstr[digits] = '\0';
+for (--digits; count; --digits)
 {
-int j = 0;
-
-if (!str)
-return (0);
-while (*str)
-{
-j += _putfd(*str++, fd);
+numstr[digits] = (count % 10) + '0';
+count /= 10;
 }
-return (j);
+return (numstr);
 }
